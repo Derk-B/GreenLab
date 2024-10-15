@@ -60,7 +60,7 @@ class RunnerConfig:
     def create_run_table_model(self) -> RunTableModel:
         """Create and return the run_table model here. A run_table is a List (rows) of tuples (columns),
         representing each run performed"""
-        dataset_factor = FactorModel("dataset", ['synthetic1', 'synthetic2', 'real_data'])
+        dataset_factor = FactorModel("dataset", ['low_spar.csv', 'synthetic2', 'real_data'])
         algorithm_factor = FactorModel("algorithm", ['DESeq2', 'TPM', 'FPKM'])
         hardware_factor = FactorModel("hardware", ['CPU', 'GPU'])
 
@@ -94,8 +94,8 @@ class RunnerConfig:
     def start_measurement(self, context: RunnerContext) -> None:
         """Perform any activity required for starting measurements."""
         sampling_interval = 200
-        dataset_path = ""
-        script_path = ""
+        dataset_path = f"/home/derk/Documents/vrije_universiteit/GreenLab/data/{self.dataset}"
+        script_path = "../bioscience_experiment.py"
 
         profiler_cmd = f'energibridge \
                         -g \
