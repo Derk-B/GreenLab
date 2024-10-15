@@ -11,7 +11,7 @@ class BioScienceExperiment:
         self.finished = False
     
     def load(self):
-        data = pd.read_csv(self.dataset_path, sep=',').values
+        data = pd.read_csv(self.dataset_path, sep=',').values[:,1:]
         lengths = None
         geneNames = None
         colNames = [str(i) for i in range(len(data[0]))]
