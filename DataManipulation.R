@@ -207,9 +207,34 @@ R3_bar_energy <- ggplot(runtable, aes(x = hardware, y = energy_consumption_.J., 
 
 R3_bar_energy
 
+run_table_syn <- runtable[runtable$dataset != 'GDS3900',]
+
+# Plot energy consumtion by hardware and dataset
 runtable %>%
-  group_by(hardware) %>%
+  group_by(hardware, dataset) %>%
+  group_split() %>%
+  lapply(function(group_data) {
+    hist(group_data$energy_consumption_.J., 
+         main = unique(group_data$hardware), 
+         xlab = paste("Energy consumption", group_data$dataset))
+  })
+
+# Normality by hardware and dataset for the metric: energy consumption
+runtable %>%
+  group_by(hardware, dataset) %>%
   dplyr::summarize(stest = shapiro.test(energy_consumption_.J.)$p.value)
+
+
+# Normality by hardware and dataset for the metric: execution time
+runtable %>%
+  group_by(hardware, dataset) %>%
+  dplyr::summarize(stest = shapiro.test(execution_time_.ms.)$p.value)
+
+
+# Normality by hardware and dataset for the metric: peak memory
+runtable %>%
+  group_by(hardware, dataset) %>%
+  dplyr::summarize(stest = shapiro.test(peak_memory_.B.)$p.value)
 
 shapiro.test(runtable$execution_time_.ms.)
 
