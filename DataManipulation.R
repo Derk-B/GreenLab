@@ -12,7 +12,7 @@ library(Hmisc)
 library(ggpubr)
 library(xtable)
 
-rawruntable <- read.csv("~/Documents/vrije_universiteit/greenlabdata/biclustering_experiment_full/run_table.csv", stringsAsFactors = TRUE)
+rawruntable <- read.csv("~/Documents/vrije_universiteit/Greenlab/runtable.csv", stringsAsFactors = TRUE)
 
 datasetsizes <-data.frame(dataset = as.factor(c('low_spar_TPM.csv', 'low_spar_CPM.csv', 'high_spar_TPM.csv', 'high_spar_CPM.csv', 'GDS3900_TPM.csv', 'GDS3900_CPM.csv')),
                           size_.B. = c(4800000, 4800000, 4800000, 4800000, 132900, 132900),
@@ -226,8 +226,10 @@ wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
 # ART test: Sparsity
 library(ARTool)
 
-model = art(energy_consumption_.J. ~ sparsity + Error(trial), data = runtable)
+model = art(energy_consumption_.J. ~ factor(sparsity), data = runtable)
 anova(model)
+
+summary(model)
 
 #runtable[runtable$hardware == 'CPU',] %>%
 runtable %>%
