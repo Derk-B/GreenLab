@@ -211,50 +211,159 @@ run_table_syn <- runtable[runtable$dataset != 'GDS3900',]
 
 # Plot energy consumtion by hardware and dataset
 runtable %>%
-  group_by(hardware, dataset) %>%
+  group_by(hardware, preprocessing, dataset) %>%
   group_split() %>%
   lapply(function(group_data) {
-    hist(group_data$energy_consumption_.J., 
+    hist(group_data$peak_memory_.B., 
          main = unique(group_data$hardware), 
-         xlab = paste("Energy consumption", group_data$dataset))
+         xlab = paste("Energy consumption and algo", group_data$dataset))
   })
 
 # Normality by hardware and dataset for the metric: energy consumption
 runtable %>%
-  group_by(hardware, dataset) %>%
+  group_by(hardware, preprocessing, dataset) %>%
   dplyr::summarize(stest = shapiro.test(energy_consumption_.J.)$p.value)
 
 
 # Normality by hardware and dataset for the metric: execution time
 runtable %>%
-  group_by(hardware, dataset) %>%
+  group_by(hardware, preprocessing, dataset) %>%
   dplyr::summarize(stest = shapiro.test(execution_time_.ms.)$p.value)
 
 
 # Normality by hardware and dataset for the metric: peak memory
 runtable %>%
+  group_by(hardware, preprocessing, dataset) %>%
+  dplyr::summarize(n = n(), stest = shapiro.test(peak_memory_.B.)$p.value)
+
+library(bestNormalize)
+runtable$norm_peak_memory_.B. = bestNormalize(runtable$peak_memory_.B.)$x.t
+runtable %>%
   group_by(hardware, dataset) %>%
-  dplyr::summarize(stest = shapiro.test(peak_memory_.B.)$p.value)
+  group_split() %>%
+  lapply(function(group_data) {
+    hist(group_data$norm_peak_memory_.B., 
+         main = unique(group_data$hardware), 
+         xlab = paste("Energy consumption", group_data$dataset))
+  })
+runtable %>%
+  group_by(hardware, dataset) %>%
+  dplyr::summarize(n = n(), stest = shapiro.test(norm_peak_memory_.B.)$p.value)
 
 shapiro.test(runtable$execution_time_.ms.)
-
-# Wilcoxon test: GPU vs CPU by energy consumed
-cpu <- runtable[runtable$hardware == 'CPU',]$energy_consumption_.J.
-gpu <- head(runtable[runtable$hardware == 'GPU',]$energy_consumption_.J., length(cpu))
-wilcox.test(gpu, cpu, paired = TRUE)
-
-# Wilcoxon test: TPM vs CPM by energy consumed
-cpm <- runtable[runtable$preprocessing == 'CPM',]$energy_consumption_.J.
-tpm <- runtable[runtable$preprocessing == 'TPM',]$energy_consumption_.J.
-wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
-
-# ART test: Sparsity
 library(ARTool)
 
+# Wilcoxon test: GPU vs CPU by energy consumed
+cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'low_spar',]$energy_consumption_.J.
+gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'low_spar',]$energy_consumption_.J.
+wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
+
+cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'high_spar',]$energy_consumption_.J.
+gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'high_spar',]$energy_consumption_.J.
+wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
+
+cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'GDS3900',]$energy_consumption_.J.
+gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'GDS3900',]$energy_consumption_.J.
+wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
+
+# Wilcoxon test: TPM vs CPM by energy consumed
+cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'low_spar',]$energy_consumption_.J.
+tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'low_spar',]$energy_consumption_.J.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'high_spar',]$energy_consumption_.J.
+tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'high_spar',]$energy_consumption_.J.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'GDS3900',]$energy_consumption_.J.
+tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'GDS3900',]$energy_consumption_.J.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+# ART test: Sparsity by energy consumed
 model = art(energy_consumption_.J. ~ factor(sparsity), data = runtable)
 anova(model)
 
 summary(model)
+
+# Wilcoxon test: GPU vs CPU by exeuction time
+cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'low_spar',]$execution_time_.ms.
+gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'low_spar',]$execution_time_.ms.
+wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
+
+cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'high_spar',]$execution_time_.ms.
+gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'high_spar',]$execution_time_.ms.
+wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
+
+cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'GDS3900',]$execution_time_.ms.
+gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'GDS3900',]$execution_time_.ms.
+wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
+
+# Wilcoxon test: TPM vs CPM by exeuction time
+cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'low_spar',]$execution_time_.ms.
+tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'low_spar',]$execution_time_.ms.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'high_spar',]$execution_time_.ms.
+tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'high_spar',]$execution_time_.ms.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'GDS3900',]$execution_time_.ms.
+tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'GDS3900',]$execution_time_.ms.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+# ART test: Sparsity by exeuction time
+model = art(execution_time_.ms. ~ factor(sparsity), data = runtable)
+anova(model)
+
+summary(model)
+
+# Wilcoxon test: GPU vs CPU by peak memory
+cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'low_spar',]$peak_memory_.B.
+gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'low_spar',]$peak_memory_.B.
+wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
+
+cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'high_spar',]$peak_memory_.B.
+gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'high_spar',]$peak_memory_.B.
+wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
+
+cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'GDS3900',]$peak_memory_.B.
+gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'GDS3900',]$peak_memory_.B.
+wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
+
+# Wilcoxon test: TPM vs CPM by peak memory
+cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'low_spar',]$peak_memory_.B.
+tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'low_spar',]$peak_memory_.B.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'high_spar',]$peak_memory_.B.
+tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'high_spar',]$peak_memory_.B.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'GDS3900',]$peak_memory_.B.
+tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'GDS3900',]$peak_memory_.B.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+# ART test: Sparsity by peak memory
+model = art(peak_memory_.B. ~ factor(sparsity), data = runtable[runtable$dataset == 'low_spar',])
+anova(model)
+
+summary(model)
+
+result <- runtable %>%
+  group_by(sparsity) %>%
+  summarise(
+    median_value = median(peak_memory_.B.),
+    wilcox_statistic = list(wilcox.test(peak_memory_.B.)$statistic),
+    p_value = list(wilcox.test(peak_memory_.B.)$p.value)
+  )
+result$p_value
+
+library(lmerTest)
+model = lmer(peak_memory_.B. ~ factor(sparsity), data = runtable)
+anova(model)
+model2 = lmer(peak_memory_.B. ~ factor(sparsity), data = runtable)
+
+
 
 #runtable[runtable$hardware == 'CPU',] %>%
 runtable %>%
