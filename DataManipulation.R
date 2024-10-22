@@ -2,13 +2,14 @@ install.packages("dplyr")
 install.packages("tidyverse")
 install.packages('ggplot2')
 install.packages('hmisc')
-# install.packages('ggpubr')
+install.packages('ARTool')
+install.packages('ggpubr')
 install.packages('xtable')
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
 library(Hmisc)
-# library(ggpubr)
+library(ggpubr)
 library(xtable)
 
 rawruntable <- read.csv("~/Documents/vrije_universiteit/greenlabdata/biclustering_experiment_full/run_table.csv", stringsAsFactors = TRUE)
@@ -222,10 +223,11 @@ cpm <- runtable[runtable$preprocessing == 'CPM',]$energy_consumption_.J.
 tpm <- runtable[runtable$preprocessing == 'TPM',]$energy_consumption_.J.
 wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
 
-# Wilcoxon test: Sparsity
-cpm <- runtable[runtable$preprocessing == 'CPM',]$energy_consumption_.J.
-tpm <- runtable[runtable$preprocessing == 'TPM',]$energy_consumption_.J.
-wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+# ART test: Sparsity
+library(ARTool)
+
+model = art(energy_consumption_.J. ~ sparsity + Error(trial), data = runtable)
+anova(model)
 
 #runtable[runtable$hardware == 'CPU',] %>%
 runtable %>%
