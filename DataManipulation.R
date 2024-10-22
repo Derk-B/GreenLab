@@ -206,6 +206,39 @@ R3_bar_energy <- ggplot(runtable, aes(x = hardware, y = energy_consumption_.J., 
 
 R3_bar_energy
 
+runtable %>%
+  group_by(hardware) %>%
+  dplyr::summarize(stest = shapiro.test(energy_consumption_.J.)$p.value)
+
+shapiro.test(runtable$execution_time_.ms.)
+
+# Wilcoxon test: GPU vs CPU by energy consumed
+cpu <- runtable[runtable$hardware == 'CPU',]$energy_consumption_.J.
+gpu <- head(runtable[runtable$hardware == 'GPU',]$energy_consumption_.J., length(cpu))
+wilcox.test(gpu, cpu, paired = TRUE)
+
+# Wilcoxon test: TPM vs CPM by energy consumed
+cpm <- runtable[runtable$preprocessing == 'CPM',]$energy_consumption_.J.
+tpm <- runtable[runtable$preprocessing == 'TPM',]$energy_consumption_.J.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+# Wilcoxon test: Sparsity
+cpm <- runtable[runtable$preprocessing == 'CPM',]$energy_consumption_.J.
+tpm <- runtable[runtable$preprocessing == 'TPM',]$energy_consumption_.J.
+wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
+
+#runtable[runtable$hardware == 'CPU',] %>%
+runtable %>%
+  group_by(hardware) %>%
+  summarise(
+    M_statistic = shapiro.test(energy_consumption_.J.)$statistic,
+    p_value = shapiro.test(energy_consumption_.J.)$p.value
+  )
+
+#runtable %>%
+
+# results <- apply(df[, c("hardware", "preprocessing", "energy_consumption_.J.")], 2, shapiro.test)
+  
 R3_bar_exec <- ggplot(runtable, aes(x = hardware, y = execution_time_.ms., fill = hardware)) +
   geom_bar(stat = "summary", fun = "mean") +
   stat_summary(fun.data=mean_cl_boot, geom="errorbar", width=0.3) +
