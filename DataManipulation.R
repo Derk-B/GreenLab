@@ -349,6 +349,15 @@ anova(model)
 
 summary(model)
 
+library(dplyr)
+ta <- cor.test(runtable$sparsity, runtable$peak_memory_.B., method = 'kendall')
+ta2 <- cor.test(runtable$peak_memory_.B., runtable$sparsity, method = 'kendall')
+tau <- Kendall::tautest(sparsity, peak_memory_.B.)$estimate
+tau
+
+ta
+ta2
+
 result <- runtable %>%
   group_by(sparsity) %>%
   summarise(
@@ -356,7 +365,12 @@ result <- runtable %>%
     wilcox_statistic = list(wilcox.test(peak_memory_.B.)$statistic),
     p_value = list(wilcox.test(peak_memory_.B.)$p.value)
   )
-result$p_value
+result
+
+s1 = runtable[runtable$sparsity == 0.29,]$peak_memory_.B.
+s2 = runtable[runtable$sparsity == 0.6993,]$peak_memory_.B.
+s3 = runtable[runtable$sparsity == 0.6999,]$peak_memory_.B.
+wilcox.test(head(s1, length(s2)), s2, paired = TRUE)
 
 library(lmerTest)
 model = lmer(peak_memory_.B. ~ factor(sparsity), data = runtable)
