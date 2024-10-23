@@ -253,6 +253,8 @@ runtable %>%
 shapiro.test(runtable$execution_time_.ms.)
 library(ARTool)
 
+runtable_only_syn = runtable[runtable$dataset != 'GDS3900',]
+
 # Wilcoxon test: GPU vs CPU by energy consumed
 cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'low_spar',]$energy_consumption_.J.
 gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'low_spar',]$energy_consumption_.J.
@@ -285,18 +287,9 @@ anova(model)
 
 summary(model)
 
-# Wilcoxon test: GPU vs CPU by exeuction time
-cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'low_spar',]$execution_time_.ms.
-gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'low_spar',]$execution_time_.ms.
-wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
-
-cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'high_spar',]$execution_time_.ms.
-gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'high_spar',]$execution_time_.ms.
-wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
-
-cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'GDS3900',]$execution_time_.ms.
-gpu_energy <- runtable[runtable$hardware == 'GPU' & runtable$dataset == 'GDS3900',]$execution_time_.ms.
-wilcox.test(head(gpu_energy, length(cpu_energy)), cpu_energy, paired = TRUE)
+# kendall test: Sparsity by energy consumption
+kendall_energy <- cor.test(runtable_only_syn$sparsity, runtable_only_syn$energy_consumption_.J., method = 'kendall')
+kendall_energy
 
 # Wilcoxon test: TPM vs CPM by exeuction time
 cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'low_spar',]$execution_time_.ms.
@@ -311,11 +304,9 @@ cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'GDS3900',
 tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'GDS3900',]$execution_time_.ms.
 wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
 
-# ART test: Sparsity by exeuction time
-model = art(execution_time_.ms. ~ factor(sparsity), data = runtable)
-anova(model)
-
-summary(model)
+# kendall test: Sparsity by execution time
+kendall_performance <- cor.test(runtable_only_syn$sparsity, runtable_only_syn$execution_time_.ms., method = 'kendall')
+kendall_performance
 
 # Wilcoxon test: GPU vs CPU by peak memory
 cpu_energy <- runtable[runtable$hardware == 'CPU' & runtable$dataset == 'low_spar',]$peak_memory_.B.
@@ -343,20 +334,9 @@ cpm <- runtable[runtable$preprocessing == 'CPM' & runtable$dataset == 'GDS3900',
 tpm <- runtable[runtable$preprocessing == 'TPM' & runtable$dataset == 'GDS3900',]$peak_memory_.B.
 wilcox.test(head(cpm, length(tpm)), tpm, paired = TRUE)
 
-# ART test: Sparsity by peak memory
-model = art(peak_memory_.B. ~ factor(sparsity), data = runtable[runtable$dataset == 'low_spar',])
-anova(model)
-
-summary(model)
-
-library(dplyr)
-ta <- cor.test(runtable$sparsity, runtable$peak_memory_.B., method = 'kendall')
-ta2 <- cor.test(runtable$peak_memory_.B., runtable$sparsity, method = 'kendall')
-tau <- Kendall::tautest(sparsity, peak_memory_.B.)$estimate
-tau
-
-ta
-ta2
+# kendall test: Sparsity by peak memory
+kendall_memory <- cor.test(runtable_only_syn$sparsity, runtable_only_syn$peak_memory_.B., method = 'kendall')
+kendall_memory
 
 result <- runtable %>%
   group_by(sparsity) %>%
