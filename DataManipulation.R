@@ -25,32 +25,208 @@ runtable <- rawruntable %>%
   filter(energy_consumption_.J. > 0)  %>% 
   filter(!(dataset != "GDS3900" & energy_consumption_.J. >= 1200))
 
-summary_stats_CPU <- runtable %>% 
-  subset(hardware == "CPU") %>%
-  group_by(dataset, preprocessing) %>%
-  summarise(mean_energy = mean(energy_consumption_.J.), mean_exec = mean(execution_time_.ms.), mean_mem = mean(peak_memory_.B.), .groups = "drop")
+# What now follows is the making of three tables with some statistic summaries (mean, stdev, median) for our three dependent variables. 
+# In the paper they can be found in one Table. 
 
-summary_table_CPU <- xtable(summary_stats_CPU,
-                        caption = "Summary Statistics by Dataset and Preprocessing type on CPU",
-                        digits = c(0, 0, 0, 2, 2, 0))
+summary_stats_energy <- runtable %>% 
+  group_by(dataset, preprocessing, hardware) %>%
+  summarise(S = mean(sparsity), mean = mean(energy_consumption_.J.), Stdev. = sd(energy_consumption_.J.), Median = median(energy_consumption_.J.), .groups = "drop")
 
-print(summary_table_CPU, 
+summary_table_energy <- xtable(summary_stats_energy,
+                            caption = "Summary Statistics by Dataset and Preprocessing type on CPU",
+                            digits = c(0, 0, 0, 0, 2, 2, 2, 2))
+
+print(summary_table_energy, 
       include.rownames = TRUE,
       floating = FALSE)
 
-summary_stats_GPU <- runtable %>% 
-  subset(hardware == "GPU") %>%
-  group_by(dataset, preprocessing) %>%
-  summarise(mean_energy = mean(energy_consumption_.J.), mean_exec = mean(execution_time_.ms.), mean_mem = mean(peak_memory_.B.), .groups = "drop")
+summary_stats_exec <- runtable %>% 
+  group_by(dataset, preprocessing, hardware) %>%
+  summarise(S = mean(sparsity), Mean = mean(execution_time_.ms.), Stdev. = sd(execution_time_.ms.), Median = median(execution_time_.ms.), .groups = "drop")
 
-summary_table_GPU <- xtable(summary_stats_GPU,
-                            caption = "Summary Statistics by Dataset and Preprocessing type on GPU",
-                            digits = c(0, 0, 0, 2, 2, 0))
+summary_table_exec <- xtable(summary_stats_exec,
+                               caption = "Summary Statistics by Dataset and Preprocessing type on CPU",
+                               digits = c(0, 0, 0, 0, 2, 2, 2, 0))
 
-print(summary_table_GPU, 
+print(summary_table_exec, 
       include.rownames = TRUE,
       floating = FALSE)
 
+summary_stats_mem <- runtable %>% 
+  group_by(dataset, preprocessing, hardware) %>%
+  summarise(S = mean(sparsity), Mean = mean(peak_memory_.B./1024), Stdev. = sd(peak_memory_.B./1024), Median = median(peak_memory_.B./1024), .groups = "drop")
+
+summary_table_mem <- xtable(summary_stats_mem,
+                             caption = "Summary Statistics by Dataset and Preprocessing type on CPU",
+                             digits = c(0, 0, 0, 0, 2, 2, 2, 0))
+
+print(summary_table_mem, 
+      include.rownames = TRUE,
+      floating = FALSE)
+
+# End of summary tables
+
+# What follows are the density and violin plots used in the descriptive statistics. 
+# CPU and GPU are in a different grid. One grid has two figures for synthetic data and two for GDS3900
+# Each figure shows both CPM and TPM as preprocessing technique
+
+density_energy_synth_CPU <- ggplot(subset(runtable, hardware == "CPU" & dataset != "GDS3900"), aes(x = energy_consumption_.J., fill = preprocessing)) +
+  geom_density(alpha=0.5) +
+  scale_fill_brewer(palette="Dark2") +
+  labs(
+    title = "Density plot - Synthetic - CPU",
+    x = "Energy consumption (in Joules)",
+    y = "Density",
+    fill = "Preprocessing"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold"),
+    aspect.ratio=1
+  )
+
+density_energy_synth_CPU
+
+density_energy_gds_CPU <- ggplot(subset(runtable,  hardware == "CPU" & dataset == "GDS3900"), aes(x = energy_consumption_.J., fill = preprocessing)) +
+  geom_density(alpha=0.5) +
+  scale_fill_brewer(palette="Dark2") +
+  labs(
+    title = "Density plot - GDS3900 - CPU",
+    x = "Energy consumption (in Joules)",
+    y = "Density",
+    fill = "Preprocessing"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold"),
+    aspect.ratio=1
+  )
+
+
+density_energy_gds_CPU
+
+density_energy_synth_GPU <- ggplot(subset(runtable, hardware == "GPU" & dataset != "GDS3900"), aes(x = energy_consumption_.J., fill = preprocessing)) +
+  geom_density(alpha=0.5) +
+  scale_fill_brewer(palette="Dark2") +
+  labs(
+    title = "Density plot - Synthetic - GPU",
+    x = "Energy consumption (in Joules)",
+    y = "Density",
+    fill = "Preprocessing"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold"),
+    aspect.ratio=1
+  )
+
+density_energy_synth_GPU
+
+density_energy_gds_GPU <- ggplot(subset(runtable,  hardware == "GPU" & dataset == "GDS3900"), aes(x = energy_consumption_.J., fill = preprocessing)) +
+  geom_density(alpha=0.5) +
+  scale_fill_brewer(palette="Dark2") +
+  labs(
+    title = "Density plot - GDS3900 - GPU",
+    x = "Energy consumption (in Joules)",
+    y = "Density",
+    fill = "Preprocessing"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold"),
+    aspect.ratio=1
+  )
+
+density_energy_gds_GPU 
+
+violin_energy_synth_CPU <- ggplot(subset(runtable,  hardware == "CPU" & dataset != "GDS3900"), aes(x= preprocessing, y = energy_consumption_.J., fill = preprocessing)) +
+  geom_violin(alpha=0.5, trim=FALSE) +
+  geom_boxplot(width=0.25, alpha=0.5, fill = "white", outlier.size = 0.5) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 2, color = "blue") +
+  scale_fill_brewer(palette="Dark2") +
+  labs(
+    title = "Violin plot - Synthetic - CPU",
+    x = "Density",
+    y = "Energy consumption (in Joules)",
+    fill = "Preprocessing"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold"),
+    aspect.ratio=1
+  )
+
+violin_energy_synth_CPU 
+
+violin_energy_gds_CPU <- ggplot(subset(runtable,  hardware == "CPU" & dataset == "GDS3900"), aes(x= preprocessing, y = energy_consumption_.J., fill = preprocessing)) +
+  geom_violin(alpha=0.5, trim=FALSE) +
+  geom_boxplot(width=0.25, alpha=0.5, fill = "white", outlier.size = 0.5) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 2, color = "blue") +
+  scale_fill_brewer(palette="Dark2") +
+  labs(
+    title = "Violin plot - GDS3900 - CPU",
+    x = "Density",
+    y = "Energy consumption (in Joules)",
+    fill = "Preprocessing"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold"),
+    aspect.ratio=1
+  )
+
+violin_energy_gds_CPU 
+
+violin_energy_synth_GPU <- ggplot(subset(runtable,  hardware == "GPU" & dataset != "GDS3900"), aes(x= preprocessing, y = energy_consumption_.J., fill = preprocessing)) +
+  geom_violin(alpha=0.5, trim=FALSE) +
+  geom_boxplot(width=0.25, alpha=0.5, fill = "white", outlier.size = 0.5) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 2, color = "blue") +
+  scale_fill_brewer(palette="Dark2") +
+  labs(
+    title = "Violin plot - Synthetic - GPU",
+    x = "Density",
+    y = "Energy consumption (in Joules)",
+    fill = "Preprocessing"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold"),
+    aspect.ratio=1
+  )
+
+violin_energy_synth_GPU 
+
+violin_energy_gds_GPU <- ggplot(subset(runtable,  hardware == "GPU" & dataset == "GDS3900"), aes(x= preprocessing, y = energy_consumption_.J., fill = preprocessing)) +
+  geom_violin(alpha=0.5, trim=FALSE) +
+  geom_boxplot(width=0.25, alpha=0.5, fill = "white", outlier.size = 0.5) +
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 2, color = "blue") +
+  scale_fill_brewer(palette="Dark2") +
+  labs(
+    title = "Violin plot - GDS3900 - GPU",
+    x = "Density",
+    y = "Energy consumption (in Joules)",
+    fill = "Preprocessing"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold"),
+    aspect.ratio=1
+  )
+
+violin_energy_gds_GPU 
+
+grid_CPU <- ggarrange(density_energy_synth_CPU, density_energy_gds_CPU, violin_energy_synth_CPU, violin_energy_gds_CPU, 
+          labels = c("A", "B", "C", "D"))
+
+grid_CPU
+
+grid_GPU <- ggarrange(density_energy_synth_GPU, density_energy_gds_GPU, violin_energy_synth_GPU, violin_energy_gds_GPU, 
+                      labels = c("A", "B", "C", "D"))
+
+grid_GPU
+
+
+# What follows is a lot of graphs for RQ's. We did not use them in the paper, but they gave us some insight in the data
 R1_CPU_box_exec_per_data <- ggplot(subset(runtable, hardware =="CPU" ), aes(x = preprocessing, y = execution_time_.ms., fill = preprocessing)) +
   geom_boxplot() +
   facet_wrap(~dataset, scales = "free") +
@@ -206,7 +382,10 @@ R3_bar_energy <- ggplot(runtable, aes(x = hardware, y = energy_consumption_.J., 
   ) 
 
 R3_bar_energy
+# End of all the graphs for the RQ's
 
+
+# run_table with only synthetic data
 run_table_syn <- runtable[runtable$dataset != 'GDS3900',]
 
 # Plot energy consumtion by hardware and dataset
