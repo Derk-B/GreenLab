@@ -13,7 +13,7 @@ The required R packages are listed on the top of the [R file](./DataManipulation
 To install energiBridge you can follow the install instructions from their [repository](https://github.com/tdurieux/EnergiBridge)
 
 ## Dataset generation
-To generate new datasets, add and or check sparsity the dataset_generation.ipynb can be used. In this notebook you can confige which shape of data you want, how much sparsity you want and test what the approximate run time of the dataset will be, for both CPU and GPU runs.
+To generate new datasets, add and or check sparsity the [dataset_generation](./dataset_generation.ipynb) notebook can be used. In this notebook you can confige which shape of data you want, how much sparsity you want and test what the approximate run time of the dataset will be, for both CPU and GPU runs.
 
 ## Running experiments
 For running the experiment both the [experiment runner config](./RunnerConfig.py) and [bioscience_experiment](./bioscience_experiment.py) are used. It is required to change the config so that the runner knows where the experiment script ([bioscience_experiment](./bioscience_experiment.py)) and where the [datasets](./data/) are located, this location string may differ per operating system so it is configurable. To run the experiment, make sure the [configuration](./RunnerConfig.py) is correct and run the following command from the root folder:
