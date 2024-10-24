@@ -1,0 +1,12 @@
+/home/robert/Documents/green_lab/experiment-runner/test/data/GDS3900_TPM.csv
+Resume:
+========================
+Dataset size (rows,columns):  334 , 197
+Execution mode:  NUMBA - GPU Parallel mode
+GPUs devices: 1
+MNC value:  2
+MNR value:  2
+Results:
+========================
+Biclusters found:  11456
+Energy consumption in joules: 35.684722900390625 for 2.2335186 sec of execution.

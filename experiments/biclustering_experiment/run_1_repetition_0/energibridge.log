@@ -1,0 +1,11 @@
+Resume:
+========================
+Dataset size (rows,columns):  7 , 5
+Execution mode:  NUMBA - GPU Parallel mode
+GPUs devices: 1
+MNC value:  2
+MNR value:  2
+Results:
+========================
+Biclusters found:  12
+Energy consumption in joules: 30.485031127929688 for 2.0319867 sec of execution.

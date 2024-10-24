@@ -1,0 +1,12 @@
+/home/robert/Documents/green_lab/experiment-runner/test/data/low_spar_CPM.csv
+Resume:
+========================
+Dataset size (rows,columns):  2000 , 1200
+Execution mode:  NUMBA - GPU Parallel mode
+GPUs devices: 1
+MNC value:  2
+MNR value:  2
+Results:
+========================
+Biclusters found:  666387
+Energy consumption in joules: 73.34190368652344 for 4.8327923 sec of execution.
