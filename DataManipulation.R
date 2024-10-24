@@ -12,6 +12,7 @@ library(Hmisc)
 library(ggpubr)
 library(xtable)
 
+# Change to own file structure
 rawruntable <- read.csv("~/Documents/vrije_universiteit/Greenlab/runtable.csv", stringsAsFactors = TRUE)
 
 datasetsizes <-data.frame(dataset = as.factor(c('low_spar_TPM.csv', 'low_spar_CPM.csv', 'high_spar_TPM.csv', 'high_spar_CPM.csv', 'GDS3900_TPM.csv', 'GDS3900_CPM.csv')),
